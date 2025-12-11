@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Chord</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="Chord is a tiny music mini app where you tap pads to build a simple 1 bar loop. Toggle steps, press play, and keep a different pattern for each day.">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Chord">
+  <meta property="og:description" content="Chord is a tiny music mini app where you tap pads to build a simple 1 bar loop. Toggle steps, press play, and keep a different pattern for each day.">
+  <meta property="og:image" content="https://chord-mini.vercel.app/assets/hero.png">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://chord-mini.vercel.app/">
+
+  <!-- Farcaster Mini App meta -->
+  <meta name="fc:miniapp" content='{"version":"1","name":"Chord","iconUrl":"https://chord-mini.vercel.app/assets/icon.png","imageUrl":"https://chord-mini.vercel.app/assets/embed-3x2.png","button":{"title":"Open Chord","action":{"type":"launch_frame","url":"https://chord-mini.vercel.app/"}},"splashImageUrl":"https://chord-mini.vercel.app/assets/splash.png","splashBackgroundColor":"#020617"}'>
+
+  <!-- Farcaster Frame meta -->
+  <meta property="fc:frame" content='{"version":"vNext","imageUrl":"https://chord-mini.vercel.app/assets/embed-3x2.png","button":{"title":"Open Chord","action":{"type":"launch_frame","url":"https://chord-mini.vercel.app/"}},"splashImageUrl":"https://chord-mini.vercel.app/assets/splash.png","splashBackgroundColor":"#020617"}'>
+
+  <meta name="theme-color" content="#020617">
+
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #020617;
+      --fg: #e5e7eb;
+      --muted: #6b7280;
+      --accent-a: #f97316;
+      --accent-b: #22c55e;
+      --accent-c: #3b82f6;
+      --accent-d: #a855f7;
+      --surface: #020617;
+      --border: rgba(148, 163, 184, 0.35);
+      --pad-off: rgba(15, 23, 42, 0.9);
+      --pad-on: #0f172a;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+      background: radial-gradient(circle at top, #020617 0%, #020617 40%, #020617 100%);
+      color: var(--fg);
+      display: flex;
+      justify-content: center;
+      align-items: stretch;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 480px;
+      margin-inline: auto;
+      padding: 18px 14px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    header {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .app-title {
+      font-size: 1.4rem;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    .subtitle {
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    .badge {
+      font-size: 0.7rem;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .grid-card {
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      padding: 14px 12px 14px;
+      background: radial-gradient(circle at top, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.96));
+      box-shadow:
+        0 18px 40px rgba(15, 23, 42, 0.9),
+        0 0 0 1px rgba(15, 23, 42, 1);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .grid-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 8px;
+    }
+
+    .grid-title {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: rgba(148, 163, 184, 0.98);
+    }
+
+    .grid-day {
+      font-size: 0.78rem;
+      color: rgba(209, 213, 219, 0.96);
+    }
+
+    .loop-grid-wrapper {
+      border-radius: 18px;
+      padding: 10px 10px 12px;
+      background: radial-gradient(circle at top, rgba(24, 24, 27, 0.9), rgba(15, 23, 42, 0.98));
+      border: 1px solid rgba(55, 65, 81, 0.9);
+    }
+
+    .loop-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 6px;
+    }
+
+    .row-labels {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      margin-right: 6px;
+      color: rgba(148, 163, 184, 0.98);
+    }
+
+    .grid-shell {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 6px;
+      align-items: stretch;
+    }
+
+    .pad {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      border-radius: 14px;
+      border: 1px solid rgba(55, 65, 81, 0.9);
+      background: var(--pad-off);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      user-select: none;
+      overflow: hidden;
+      transition: background 0.12s ease-out, border-color 0.12s ease-out, transform 0.06s ease-out, box-shadow 0.12s ease-out;
+    }
+
+    .pad::before {
+      content: "";
+      position: absolute;
+      inset: -40%;
+      opacity: 0;
+      transition: opacity 0.2s ease-out;
+      background: radial-gradient(circle at top, rgba(250, 250, 250, 0.16), transparent);
+    }
+
+    .pad span {
+      font-size: 0.7rem;
+      color: rgba(148, 163, 184, 0.95);
+    }
+
+    .pad.on::before {
+      opacity: 1;
+    }
+
+    .pad:active {
+      transform: scale(0.96);
+    }
+
+    .pad.kick.on {
+      background: linear-gradient(135deg, rgba(248, 113, 113, 0.3), rgba(239, 68, 68, 0.1));
+      border-color: rgba(248, 113, 113, 0.9);
+      box-shadow: 0 0 16px rgba(248, 113, 113, 0.6);
+    }
+
+    .pad.snare.on {
+      background: linear-gradient(135deg, rgba(96, 165, 250, 0.3), rgba(37, 99, 235, 0.08));
+      border-color: rgba(96, 165, 250, 0.9);
+      box-shadow: 0 0 16px rgba(96, 165, 250, 0.6);
+    }
+
+    .pad.hat.on {
+      background: linear-gradient(135deg, rgba(52, 211, 153, 0.35), rgba(16, 185, 129, 0.08));
+      border-color: rgba(45, 212, 191, 0.9);
+      box-shadow: 0 0 16px rgba(45, 212, 191, 0.6);
+    }
+
+    .pad.chime.on {
+      background: linear-gradient(135deg, rgba(244, 114, 182, 0.3), rgba(236, 72, 153, 0.08));
+      border-color: rgba(244, 114, 182, 0.9);
+      box-shadow: 0 0 16px rgba(244, 114, 182, 0.6);
+    }
+
+    .step-indicator-row {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 8px;
+      font-size: 0.7rem;
+      color: rgba(148, 163, 184, 0.9);
+    }
+
+    .step-indicator-row span.active {
+      color: rgba(248, 250, 252, 0.96);
+    }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .controls-left {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .btn {
+      border-radius: 999px;
+      padding: 7px 14px;
+      border: 1px solid rgba(148, 163, 184, 0.7);
+      background: rgba(15, 23, 42, 0.96);
+      color: rgba(248, 250, 252, 0.98);
+      font-size: 0.8rem;
+      cursor: pointer;
+      user-select: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.12s ease-out, border-color 0.12s ease-out, transform 0.06s ease-out;
+    }
+
+    .btn-primary {
+      border-color: rgba(129, 140, 248, 0.9);
+      background: linear-gradient(135deg, rgba(129, 140, 248, 0.14), rgba(37, 99, 235, 0.08));
+    }
+
+    .btn:active {
+      transform: scale(0.97);
+    }
+
+    .status-text {
+      font-size: 0.75rem;
+      color: rgba(148, 163, 184, 0.96);
+    }
+
+    .environment-row {
+      font-size: 0.74rem;
+      color: rgba(148, 163, 184, 0.96);
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .environment-row span.highlight { color: #a5b4fc; }
+
+    footer {
+      margin-top: 4px;
+      font-size: 0.7rem;
+      color: rgba(100, 116, 139, 0.95);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .dot { width: 4px; height: 4px; border-radius: 50%; background: rgba(148, 163, 184, 0.7); }
+
+    @media (min-height: 780px) {
+      .loop-grid-wrapper { padding-block: 12px 14px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="title-row">
+        <div>
+          <div class="app-title">Chord</div>
+          <div class="subtitle">Tap a tiny daily loop.</div>
+        </div>
+        <div class="badge">Mini Sequencer</div>
+      </div>
+    </header>
+
+    <main>
+      <section class="grid-card">
+        <div class="grid-header">
+          <span class="grid-title">One bar pattern</span>
+          <span class="grid-day" id="grid-day"></span>
+        </div>
+
+        <div class="loop-grid-wrapper">
+          <div class="grid-shell">
+            <div class="row-labels">
+              <span>KICK</span>
+              <span>SNARE</span>
+              <span>HAT</span>
+              <span>CHIME</span>
+            </div>
+            <div class="loop-grid" id="loop-grid">
+              <!-- Pads injected by JS -->
+            </div>
+          </div>
+          <div class="step-indicator-row" id="step-indicators">
+            <span data-step="0">1</span>
+            <span data-step="1">2</span>
+            <span data-step="2">3</span>
+            <span data-step="3">4</span>
+            <span data-step="4">5</span>
+            <span data-step="5">6</span>
+            <span data-step="6">7</span>
+            <span data-step="7">8</span>
+          </div>
+        </div>
+
+        <div class="controls">
+          <div class="controls-left">
+            <button class="btn btn-primary" id="btn-play">Play loop</button>
+            <button class="btn" id="btn-clear">Clear</button>
+          </div>
+          <span class="status-text" id="status-text">Stopped · 0 active steps</span>
+        </div>
+
+        <div class="environment-row">
+          <span id="environment-indicator">Detecting environment…</span>
+          <span class="highlight" id="loop-state">Unsaved live loop</span>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <span>Audio stays on this device.</span>
+      <span class="dot"></span>
+    </footer>
+  </div>
+
+  <script type="module" src="./script.js"></script>
+</body>
+</html>
