@@ -1,0 +1,31 @@
+{
+  "accountAssociation": {
+    "header": "TODO_REPLACE_BASE64_HEADER",
+    "payload": "TODO_REPLACE_BASE64_PAYLOAD",
+    "signature": "TODO_REPLACE_BASE64_SIGNATURE"
+  },
+  "miniapp": {
+    "version": "1",
+    "name": "Chord",
+    "homeUrl": "https://chord-mini.vercel.app/",
+    "iconUrl": "https://chord-mini.vercel.app/assets/icon.png",
+    "splashImageUrl": "https://chord-mini.vercel.app/assets/splash.png",
+    "splashBackgroundColor": "#020617",
+    "subtitle": "Tap a tiny daily loop",
+    "description": "Chord is a tiny music mini app where you tap pads to build a simple 1 bar loop. Toggle steps, press play, and keep a different pattern for each day.",
+    "primaryCategory": "music",
+    "tags": [
+      "fun",
+      "simple",
+      "utility"
+    ],
+    "heroImageUrl": "https://chord-mini.vercel.app/assets/hero.png",
+    "ogTitle": "Chord",
+    "ogDescription": "Chord is a tiny music mini app where you tap pads to build a simple 1 bar loop. Toggle steps, press play, and keep a different pattern for each day.",
+    "ogImageUrl": "https://chord-mini.vercel.app/assets/hero.png",
+    "screenshotUrls": [
+      "https://chord-mini.vercel.app/assets/hero.png"
+    ],
+    "noindex": true
+  }
+}
